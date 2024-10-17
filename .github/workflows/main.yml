@@ -30,7 +30,10 @@ jobs:
       # - name: Install dependencies
       #   run: npm ci
        
-        - name: Run tests
+        - name: Set up working directory
+          run: cd D:\a\KIGS_POC\KIGS_POC
+        - name: Run npm test
           run: npm test
+    
 
       
