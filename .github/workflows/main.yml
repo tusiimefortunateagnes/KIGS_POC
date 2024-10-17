@@ -1,98 +1,23 @@
-# GitHub Actions Workflow for Vue.js Production Deployment
-# .github/workflows/deploy-production.yml
-
-name: Production Deployment
+name: CI Pipeline
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+    branches:
+      - main
 
 jobs:
-  deploy:
-    runs-on: ubuntu-latest
-    
+  build:
+    runs-on: windows-latest
     steps:
-    - uses: actions/checkout@v3
-    
-    - name: Setup Node.js
-      uses: actions/setup-node@v3
-      with:
-        node-version: '18'
-        cache: 'npm'
-    
-    - name: Install Dependencies
-      run: npm ci
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
       
-    - name: Run Tests
-      run: npm run test:unit
-      
-    - name: Build
-      run: npm run build
-      
-    - name: Deploy to Production
-      run: |
-        # Add your deployment commands here
-        # Example for deploying to a server via SSH:
-        # ssh user@your-server "cd /path/to/app && git pull && npm install && npm run build"
-      
-    - name: Verify Deployment
-      run: |
-        # Add health check commands
-        # Example: curl https://your-production-url/health
-        
-    - name: Rollback on Failure
-      if: failure()
-      run: |
-        # Add rollback commands here
-        # Example: ssh user@your-server "cd /path/to/app && git reset --hard HEAD~1 && npm install && npm run build"
-
----
-# prometheus.yml configuration for monitoring
-# monitoring/prometheus.yml
-
-global:
-  scrape_interval: 15s
-
-scrape_configs:
-  - job_name: 'vue-app'
-    static_configs:
-      - targets: ['localhost:3000']  # Adjust to your app's metrics endpoint
-
-  - job_name: 'node-exporter'
-    static_configs:
-      - targets: ['localhost:9100']
-
----
-# Docker Compose file for monitoring stack
-# docker-compose.monitoring.yml
-
-version: '3.8'
-
-services:
-  prometheus:
-    image: prom/prometheus:latest
-    volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
-
-  grafana:
-    image: grafana/grafana:latest
-    depends_on:
-      - prometheus
-    ports:
-      - "3000:3000"
-    environment:
-      - GF_SECURITY_ADMIN_PASSWORD=your_secure_password
-    volumes:
-      - grafana-storage:/var/lib/grafana
-
-  node-exporter:
-    image: prom/node-exporter:latest
-    ports:
-      - "9100:9100"
-
-volumes:
-  grafana-storage:
